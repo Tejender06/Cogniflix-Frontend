@@ -1,34 +1,40 @@
 import { useEffect, useState } from "react";
 import HeroBanner from "../components/HeroBanner";
 import MovieRow from "../components/MovieRow";
-import { fetchMovies, fetchTrendingMovies, fetchRecommendations, fetchHistory } from "../services/movieService";
+import { fetchMovies, fetchTrendingMovies, fetchRecommendations, fetchHistory, fetchGenres } from "../services/movieService";
 import type { Movie } from "../services/movieService";
 import "./dashboard.css";
-
-const GENRES = ["Action", "Drama", "Comedy", "Thriller", "Horror", "Romance", "Adventure", "Sci-Fi"];
 
 export default function DashboardPage() {
   const [recommended, setRecommended] = useState<Movie[]>([]);
   const [trending, setTrending] = useState<Movie[]>([]);
   const [history, setHistory] = useState<Movie[]>([]);
   const [filteredMovies, setFilteredMovies] = useState<Movie[]>([]);
+  const [genres, setGenres] = useState<string[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
 
   const loadData = async () => {
     try {
-      const [recData, trendData, histData, filterData] = await Promise.all([
+      const [recData, trendData, histData, filterData, genresData] = await Promise.all([
         fetchRecommendations(),
         fetchTrendingMovies(),
         fetchHistory(),
-        fetchMovies(selectedGenre || undefined)
+        fetchMovies(selectedGenre || undefined),
+        fetchGenres()
       ]);
 
       setRecommended(recData || []);
       setTrending(trendData || []);
       setHistory(histData || []);
       setFilteredMovies(filterData || []);
+      
+      // Only set genres if not already set to avoid UI jumping, or just update it
+      if (genresData && genresData.length > 0) {
+        // limit to top 15 genres or so to avoid clutter if too many
+        setGenres(genresData.slice(0, 15));
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -62,13 +68,13 @@ export default function DashboardPage() {
             >
               All
             </button>
-            {GENRES.map(g => (
+            {genres.map(g => (
               <button 
                 key={g} 
                 className={`chip ${selectedGenre === g.toLowerCase() ? 'active' : ''}`}
                 onClick={() => setSelectedGenre(g.toLowerCase())}
               >
-                {g}
+                {g.charAt(0).toUpperCase() + g.slice(1)}
               </button>
             ))}
           </div>

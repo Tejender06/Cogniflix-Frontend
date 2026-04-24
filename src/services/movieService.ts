@@ -21,6 +21,11 @@ export const fetchMovieById = async (id: string): Promise<Movie> => {
   return res.data.movie;
 };
 
+export const fetchGenres = async (): Promise<string[]> => {
+  const res = await api.get<{genres: string[]}>("/api/movies/genres");
+  return res.data.genres;
+};
+
 export const fetchMovies = async (genre?: string): Promise<Movie[]> => {
   const params = genre ? { genre } : {};
   const res = await api.get<MovieResponse>("/api/movies", { params });

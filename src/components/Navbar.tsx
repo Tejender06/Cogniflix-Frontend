@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./navbar.css";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,13 +21,13 @@ export default function Navbar() {
 
   return (
     <header className={`navbar ${isScrolled ? "scrolled" : ""}`}>
-      <div className="logo">COGNIFLIX</div>
+      <div className="logo" onClick={() => navigate('/dashboard')} style={{cursor: 'pointer'}}>COGNIFLIX</div>
       <ul className="navbar-links">
-        <li>Home</li>
-        <li>Movies</li>
-        <li>TV Shows</li>
-        <li>New & Popular</li>
-        <li>My List</li>
+        <li onClick={() => navigate('/dashboard')}>Home</li>
+        <li onClick={() => navigate('/dashboard')}>Movies</li>
+        <li onClick={() => navigate('/dashboard')}>TV Shows</li>
+        <li onClick={() => navigate('/dashboard')}>New & Popular</li>
+        <li onClick={() => navigate('/dashboard')}>My List</li>
       </ul>
     </header>
   );
