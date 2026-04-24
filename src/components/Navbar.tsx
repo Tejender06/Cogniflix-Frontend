@@ -93,7 +93,7 @@ export default function Navbar() {
         {user && (
           <div className="profile-menu">
             <span className="profile-name">{user.name || "User"}</span>
-            <LogOut className="logout-icon" size={20} onClick={handleLogout} title="Logout" />
+            <LogOut className="logout-icon" size={20} onClick={handleLogout} />
           </div>
         )}
       </div>

@@ -3,7 +3,6 @@ import { Mail, Lock, Eye, User } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../services/authService";
-import { useAuth } from "../context/AuthContext";
 import "./login.css";
 
 export default function SignupPage() {
@@ -18,7 +17,6 @@ export default function SignupPage() {
   const [isSlow, setIsSlow] = useState(false);
 
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const handleSignup = async () => {
     setError("");
