@@ -1,11 +1,27 @@
+import { useState } from "react";
 import "./moviecard.css";
-import type { Movie } from "../services/movieService";
+import { type Movie, postInteraction } from "../services/movieService";
 
 interface Props {
   movie: Movie;
+  onInteraction?: () => void;
 }
 
-export default function MovieCard({ movie }: Props) {
+export default function MovieCard({ movie, onInteraction }: Props) {
+  const [loading, setLoading] = useState(false);
+
+  const handleInteraction = async (type: 'watch' | 'like' | 'rate') => {
+    try {
+      setLoading(true);
+      await postInteraction(movie.id, type);
+      if (onInteraction) onInteraction();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="movie-card" id={`movie-${movie.id}`}>
       <img 
@@ -15,6 +31,11 @@ export default function MovieCard({ movie }: Props) {
       />
       <div className="movie-info">
         <h3>{movie.title}</h3>
+        <div className="movie-actions">
+          <button disabled={loading} onClick={() => handleInteraction('watch')}>Watch</button>
+          <button disabled={loading} onClick={() => handleInteraction('like')}>Like</button>
+          <button disabled={loading} onClick={() => handleInteraction('rate')}>Rate</button>
+        </div>
       </div>
     </div>
   );

@@ -295,3 +295,41 @@ body {
   justify-content: center;
   align-items: center;
 }
+
+/* ================= GENRE FILTER ================= */
+.genre-filter {
+  margin: 20px 40px;
+}
+
+.genre-filter h3 {
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+  color: #fff;
+}
+
+.genre-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.chip:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.chip.active {
+  background: #e50914;
+  border-color: #e50914;
+  font-weight: bold;
+}

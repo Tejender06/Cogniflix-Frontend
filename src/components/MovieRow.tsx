@@ -3,23 +3,15 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import MovieCard from "./MovieCard";
 import "./movierow.css";
 
-type Movie = {
-  id: string;
-  title: string;
-  thumb: string;
-  match: number;
-  year: number;
-  rating: string;
-  genres: string[];
-  tag?: string;
-};
+import type { Movie } from "../services/movieService";
 
 interface MovieRowProps {
   title: string;
   movies: Movie[];
+  onInteraction?: () => void;
 }
 
-export default function MovieRow({ title, movies }: MovieRowProps) {
+export default function MovieRow({ title, movies, onInteraction }: MovieRowProps) {
   const rowRef = useRef<HTMLDivElement | null>(null);
 
   const scroll = (dir: "left" | "right") => {
@@ -56,7 +48,7 @@ export default function MovieRow({ title, movies }: MovieRowProps) {
         <div className="mrow__track" ref={rowRef}>
           {Array.isArray(movies) &&
             movies.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} />
+              <MovieCard key={movie.id} movie={movie} onInteraction={onInteraction} />
             ))}
         </div>
 

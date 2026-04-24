@@ -1,19 +1,9 @@
-import axios from "axios";
-
-const API_BASE_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "https://cogniflix-backend.onrender.com";
-
-const api = axios.create({
-  baseURL: `${API_BASE_URL}/api/auth`,
-  withCredentials: true,
-});
+import api from "./api";
 
 // ================= LOGIN =================
 export const loginUser = async (email: string, password: string) => {
   try {
-    const res = await api.post("/login", { email, password });
+    const res = await api.post("/api/auth/login", { email, password });
     return res.data;
   } catch (err: unknown) {
     const e = err as { response?: { data?: { error?: string } } };
@@ -28,7 +18,7 @@ export const registerUser = async (
   password: string
 ) => {
   try {
-    const res = await api.post("/register", { name, email, password });
+    const res = await api.post("/api/auth/register", { name, email, password });
     return res.data;
   } catch (err: unknown) {
     const e = err as { response?: { data?: { error?: string } } };
@@ -39,7 +29,7 @@ export const registerUser = async (
 // ================= GET CURRENT USER =================
 export const getCurrentUser = async () => {
   try {
-    const res = await api.get("/me");
+    const res = await api.get("/api/auth/me");
     return res.data;
   } catch {
     throw new Error("Not authenticated");
@@ -49,7 +39,7 @@ export const getCurrentUser = async () => {
 // ================= LOGOUT =================
 export const logoutUser = async () => {
   try {
-    await api.post("/logout");
+    await api.post("/api/auth/logout");
   } catch {
     console.error("Logout failed");
   }
@@ -58,7 +48,7 @@ export const logoutUser = async () => {
 // ================= WAKE UP BACKEND =================
 export const wakeUpBackend = async () => {
   try {
-    await axios.get(`${API_BASE_URL}/api/test`);
+    await api.get("/api/test");
   } catch {
     // Ignore — just a ping to wake free-tier server
   }
