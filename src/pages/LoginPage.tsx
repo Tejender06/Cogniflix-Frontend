@@ -3,6 +3,7 @@ import { Mail, Lock, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../services/authService";
+import { useAuth } from "../context/AuthContext";
 import "./login.css";
 
 export default function LoginPage() {
@@ -16,6 +17,7 @@ export default function LoginPage() {
   const [isSlow, setIsSlow] = useState(false);
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async () => {
     setError("");
@@ -27,9 +29,8 @@ export default function LoginPage() {
     }, 5000);
 
     try {
-      await loginUser(email, password);
-
-      // cookie is already set by backend
+      const data = await loginUser(email, password);
+      login(data.user); // Update global auth state
       navigate("/dashboard");
     } catch (err: unknown) {
       if (err instanceof Error) {

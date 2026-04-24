@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Mail, Lock, Eye, User } from "lucide-react";
 import { motion } from "framer-motion";
-import { registerUser } from "../services/authService";
 import { useNavigate } from "react-router-dom";
+import { registerUser } from "../services/authService";
+import { useAuth } from "../context/AuthContext";
 import "./login.css";
 
 export default function SignupPage() {
@@ -17,6 +18,7 @@ export default function SignupPage() {
   const [isSlow, setIsSlow] = useState(false);
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSignup = async () => {
     setError("");
@@ -29,7 +31,7 @@ export default function SignupPage() {
 
     try {
       await registerUser(name, email, password);
-      navigate("/");
+      navigate("/login");
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -96,7 +98,7 @@ export default function SignupPage() {
 
           <p className="signup">
             Already have an account?{" "}
-            <span onClick={() => navigate("/")}>Login</span>
+            <span onClick={() => navigate("/login")}>Login</span>
           </p>
         </div>
       </motion.div>

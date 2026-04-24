@@ -3,6 +3,8 @@ import HeroBanner from "../components/HeroBanner";
 import MovieRow from "../components/MovieRow";
 import { fetchMovies, fetchTrendingMovies, fetchRecommendations, fetchHistory, fetchGenres } from "../services/movieService";
 import type { Movie } from "../services/movieService";
+import { useMovieContext } from "../context/MovieContext";
+import SkeletonLoader from "../components/SkeletonLoader";
 import "./dashboard.css";
 
 export default function DashboardPage() {
@@ -14,6 +16,8 @@ export default function DashboardPage() {
   
   const [loading, setLoading] = useState(true);
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
+  
+  const { heroMovie, setHeroMovie } = useMovieContext();
 
   const loadData = async () => {
     try {
@@ -30,9 +34,13 @@ export default function DashboardPage() {
       setHistory(histData || []);
       setFilteredMovies(filterData || []);
       
-      // Only set genres if not already set to avoid UI jumping, or just update it
+      if (!heroMovie && recData && recData.length > 0) {
+        setHeroMovie(recData[0]);
+      } else if (!heroMovie && trendData && trendData.length > 0) {
+        setHeroMovie(trendData[0]);
+      }
+      
       if (genresData && genresData.length > 0) {
-        // limit to top 15 genres or so to avoid clutter if too many
         setGenres(genresData.slice(0, 15));
       }
     } catch (err) {
@@ -46,17 +54,31 @@ export default function DashboardPage() {
     loadData();
   }, [selectedGenre]);
 
-  if (loading && !filteredMovies.length) return <div className="loader">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="dashboard-container" style={{ paddingTop: '70px' }}>
+        <SkeletonLoader type="banner" />
+        <div className="dashboard-content" style={{ padding: '0 4%' }}>
+          <SkeletonLoader type="title" style={{ marginTop: '30px' }} />
+          <div style={{ display: 'flex', gap: '10px', overflow: 'hidden', marginBottom: '40px' }}>
+            {[1, 2, 3, 4, 5, 6].map(i => <SkeletonLoader key={i} type="card" />)}
+          </div>
+          <SkeletonLoader type="title" />
+          <div style={{ display: 'flex', gap: '10px', overflow: 'hidden' }}>
+            {[1, 2, 3, 4, 5, 6].map(i => <SkeletonLoader key={i} type="card" />)}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const heroMovie = trending[0] || recommended[0] || filteredMovies[0];
+  const defaultMovie = heroMovie || trending[0] || recommended[0] || filteredMovies[0];
 
   return (
-    <div className="dashboard">
-      {/* HERO */}
-      {heroMovie && <HeroBanner movie={heroMovie} />}
+    <div className="dashboard-container">
+      {defaultMovie && <HeroBanner movie={defaultMovie} />}
 
-      {/* NETFLIX STYLE ROWS */}
-      <div className="rows">
+      <div className="dashboard-content">
         
         {/* Genre Filter UI */}
         <div className="genre-filter">

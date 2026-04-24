@@ -4,6 +4,7 @@ export type Movie = {
   id: string;
   title: string;
   poster_url: string;
+  backdrop_url?: string;
   popularity_score?: number;
   genre?: string;
   language?: string;
@@ -26,9 +27,16 @@ export const fetchGenres = async (): Promise<string[]> => {
   return res.data.genres;
 };
 
-export const fetchMovies = async (genre?: string): Promise<Movie[]> => {
-  const params = genre ? { genre } : {};
+export const fetchMovies = async (genre?: string, search?: string): Promise<Movie[]> => {
+  const params: any = {};
+  if (genre) params.genre = genre;
+  if (search) params.search = search;
   const res = await api.get<MovieResponse>("/api/movies", { params });
+  return res.data.movies;
+};
+
+export const fetchTvShows = async (): Promise<Movie[]> => {
+  const res = await api.get<MovieResponse>("/api/tv-shows");
   return res.data.movies;
 };
 
@@ -47,7 +55,22 @@ export const fetchHistory = async (): Promise<Movie[]> => {
   return res.data.data;
 };
 
-export const postInteraction = async (content_id: string, interaction_type: 'watch' | 'like' | 'rate') => {
-  const res = await api.post("/api/interactions", { content_id, interaction_type });
+export const fetchSavedMovies = async (): Promise<Movie[]> => {
+  const res = await api.get<{data: Movie[]}>("/api/interactions/saved");
+  return res.data.data;
+};
+
+export const fetchSimilarMovies = async (id: string): Promise<Movie[]> => {
+  const res = await api.get<{movies: Movie[]}>(`/api/movies/${id}/similar`);
+  return res.data.movies;
+};
+
+export const postInteraction = async (content_id: string, interaction_type: 'watch' | 'like' | 'rate' | 'save', score?: number) => {
+  const res = await api.post("/api/interactions", { content_id, interaction_type, score });
+  return res.data;
+};
+
+export const deleteSavedInteraction = async (content_id: string) => {
+  const res = await api.delete(`/api/interactions/saved/${content_id}`);
   return res.data;
 };
