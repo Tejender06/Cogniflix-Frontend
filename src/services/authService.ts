@@ -4,6 +4,9 @@ import api from "./api";
 export const loginUser = async (email: string, password: string) => {
   try {
     const res = await api.post("/api/auth/login", { email, password });
+    if (res.data.token) {
+      localStorage.setItem("token", res.data.token);
+    }
     return res.data;
   } catch (err: unknown) {
     const e = err as { response?: { data?: { error?: string } } };
@@ -39,6 +42,7 @@ export const getCurrentUser = async () => {
 // ================= LOGOUT =================
 export const logoutUser = async () => {
   try {
+    localStorage.removeItem("token");
     await api.post("/api/auth/logout");
   } catch {
     console.error("Logout failed");
