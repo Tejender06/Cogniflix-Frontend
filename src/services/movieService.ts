@@ -1,19 +1,3 @@
-/*
-FILE: movieService.ts
-
-PURPOSE:
-Provides API methods for fetching movie and TV show data.
-
-FLOW:
-Frontend Component -> Movie Service -> api.ts -> Backend
-
-USED BY:
-DashboardPage.tsx, MoviesPage.tsx, MovieInfoPage.tsx
-
-NEXT FLOW:
-Backend movie/recommendation routes
-
-*/
 import api from "./api";
 
 export type Movie = {
@@ -43,12 +27,20 @@ export const fetchGenres = async (): Promise<string[]> => {
   return res.data.genres;
 };
 
-export const fetchMovies = async (genre?: string, search?: string): Promise<Movie[]> => {
-  const params: any = {};
+export const fetchMovies = async (
+  genre?: string,
+  search?: string,
+  page = 1,
+  limit = 20
+): Promise<{ movies: Movie[]; total: number; page: number; limit: number }> => {
+  const params: Record<string, string | number> = { page, limit };
   if (genre) params.genre = genre;
   if (search) params.search = search;
-  const res = await api.get<MovieResponse>("/api/movies", { params });
-  return res.data.movies;
+  const res = await api.get<{ movies: Movie[]; total: number; page: number; limit: number }>(
+    "/api/movies",
+    { params }
+  );
+  return res.data;
 };
 
 export const fetchTvShows = async (): Promise<Movie[]> => {
