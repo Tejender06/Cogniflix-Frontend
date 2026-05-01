@@ -19,7 +19,7 @@ import { useEffect } from "react";
 import MainLayout from "./layouts/MainLayout";
 import DashboardPage from "./pages/DashboardPage";
 import MoviesPage from "./pages/MoviesPage";
-import TvShowsPage from "./pages/TvShowsPage";
+import WebSeriesPage from "./pages/WebSeriesPage";
 import NewAndPopularPage from "./pages/NewAndPopularPage";
 import MyListPage from "./pages/MyListPage";
 import MovieInfoPage from "./pages/MovieInfoPage";
@@ -37,6 +37,36 @@ function AuthRedirect({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+import { useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
+import AnimatedPage from "./components/AnimatedPage";
+
+function AnimatedRoutes() {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        {/* Unauthenticated Routes */}
+        <Route path="/login" element={<AuthRedirect><AnimatedPage><LoginPage /></AnimatedPage></AuthRedirect>} />
+        <Route path="/signup" element={<AuthRedirect><AnimatedPage><SignupPage /></AnimatedPage></AuthRedirect>} />
+        
+        {/* Authenticated Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<MainLayout />}>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<AnimatedPage><DashboardPage /></AnimatedPage>} />
+            <Route path="movies" element={<AnimatedPage><MoviesPage /></AnimatedPage>} />
+            <Route path="web-series" element={<AnimatedPage><WebSeriesPage /></AnimatedPage>} />
+            <Route path="new" element={<AnimatedPage><NewAndPopularPage /></AnimatedPage>} />
+            <Route path="my-list" element={<AnimatedPage><MyListPage /></AnimatedPage>} />
+            <Route path="movie/:id" element={<AnimatedPage><MovieInfoPage /></AnimatedPage>} />
+          </Route>
+        </Route>
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 function App() {
   useEffect(() => {
     wakeUpBackend();
@@ -46,24 +76,7 @@ function App() {
     <AuthProvider>
       <MovieProvider>
         <Router>
-          <Routes>
-            {/* Unauthenticated Routes */}
-            <Route path="/login" element={<AuthRedirect><LoginPage /></AuthRedirect>} />
-            <Route path="/signup" element={<AuthRedirect><SignupPage /></AuthRedirect>} />
-            
-            {/* Authenticated Routes */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/" element={<MainLayout />}>
-                <Route index element={<Navigate to="/dashboard" replace />} />
-                <Route path="dashboard" element={<DashboardPage />} />
-                <Route path="movies" element={<MoviesPage />} />
-                <Route path="tv" element={<TvShowsPage />} />
-                <Route path="new" element={<NewAndPopularPage />} />
-                <Route path="my-list" element={<MyListPage />} />
-                <Route path="movie/:id" element={<MovieInfoPage />} />
-              </Route>
-            </Route>
-          </Routes>
+          <AnimatedRoutes />
         </Router>
       </MovieProvider>
     </AuthProvider>

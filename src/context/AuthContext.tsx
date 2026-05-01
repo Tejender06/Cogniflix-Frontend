@@ -14,6 +14,7 @@ NEXT FLOW:
 None
 
 */
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { getCurrentUser } from "../services/authService";
 
@@ -41,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const userData = await getCurrentUser();
         setUser(userData.user);
-      } catch (err) {
+      } catch {
         setUser(null);
       } finally {
         setLoading(false);

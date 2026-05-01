@@ -15,10 +15,10 @@ movieService.ts
 
 */
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { fetchMovieById, postInteraction, fetchSimilarMovies, fetchSavedMovies, deleteSavedInteraction } from "../services/movieService";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { fetchMovieById, postInteraction, fetchSimilarMovies, fetchSavedMovies, deleteSavedInteraction, deleteInteraction } from "../services/movieService";
 import type { Movie } from "../services/movieService";
-import { ChevronLeft, Play, ThumbsUp, Star, Plus, Check } from "lucide-react";
+import { ChevronLeft, Play, ThumbsUp, ThumbsDown, Star, Plus, Check } from "lucide-react";
 import MovieRow from "../components/MovieRow";
 import SkeletonLoader from "../components/SkeletonLoader";
 import "./movieinfo.css";
@@ -26,11 +26,15 @@ import "./movieinfo.css";
 export default function MovieInfoPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [movie, setMovie] = useState<Movie | null>(null);
+  const location = useLocation();
+  const passedMovie = location.state?.movie as Movie | undefined;
+  
+  const [movie, setMovie] = useState<Movie | null>(passedMovie || null);
   const [similarMovies, setSimilarMovies] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!passedMovie);
   const [actionLoading, setActionLoading] = useState(false);
   const [liked, setLiked] = useState(false);
+  const [disliked, setDisliked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [rating, setRating] = useState(0);
 
@@ -49,6 +53,7 @@ export default function MovieInfoPage() {
         
         // Reset interaction states when movie changes
         setLiked(false);
+        setDisliked(false);
         setSaved(savedData.some(m => m.id === movieData.id));
         setRating(0);
       } catch (err) {
@@ -60,7 +65,7 @@ export default function MovieInfoPage() {
     loadData();
   }, [id]);
 
-  const handleInteraction = async (type: 'watch' | 'like' | 'rate' | 'save', score?: number) => {
+  const handleInteraction = async (type: 'watch' | 'like' | 'dislike' | 'rate' | 'save', score?: number) => {
     if (!movie) return;
     try {
       setActionLoading(true);
@@ -76,10 +81,52 @@ export default function MovieInfoPage() {
         return;
       }
 
-      await postInteraction(movie.id, type, score);
+      if (type === 'like') {
+        if (liked) {
+          await deleteInteraction(movie.id, 'like');
+          setLiked(false);
+        } else {
+          await postInteraction(movie.id, 'like');
+          setLiked(true);
+          if (disliked) {
+            await deleteInteraction(movie.id, 'dislike');
+            setDisliked(false);
+          }
+        }
+        return;
+      }
       
-      if (type === 'like') setLiked(true);
-      if (type === 'rate' && score) setRating(score);
+      if (type === 'dislike') {
+        if (disliked) {
+          await deleteInteraction(movie.id, 'dislike');
+          setDisliked(false);
+        } else {
+          await postInteraction(movie.id, 'dislike');
+          setDisliked(true);
+          if (liked) {
+            await deleteInteraction(movie.id, 'like');
+            setLiked(false);
+          }
+        }
+        return;
+      }
+
+      if (type === 'rate') {
+        if (score === rating) {
+          await deleteInteraction(movie.id, 'rate');
+          setRating(0);
+        } else {
+          await postInteraction(movie.id, 'rate', score);
+          setRating(score!);
+        }
+        return;
+      }
+
+      let watchTime = undefined;
+      if (type === 'watch') {
+        watchTime = Math.floor(Math.random() * 120) + 10; // simulate 10 to 130 mins
+        await postInteraction(movie.id, type, score, watchTime);
+      }
       
     } catch (err) {
       console.error(err);
@@ -114,40 +161,35 @@ export default function MovieInfoPage() {
   return (
     <div 
       className="movie-info-page"
-      style={{
-        backgroundImage: `linear-gradient(to right, rgba(11, 11, 11, 1) 20%, rgba(11, 11, 11, 0.7) 60%, rgba(11, 11, 11, 0.2) 100%), linear-gradient(to top, var(--bg-primary) 0%, transparent 40%), url('${movie.poster_url?.replace('/w500', '/original')}')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'top right',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed',
-        minHeight: '100vh'
-      }}
     >
+      <div className="movie-info-backdrop" style={{ backgroundImage: `url('${movie.backdrop_url || movie.poster_url?.replace('/w500', '/original')}')` }}>
+        <div className="backdrop-vignette"></div>
+        <div className="backdrop-gradient-bottom"></div>
+      </div>
+
       <button className="back-btn" onClick={() => navigate(-1)}>
-        <ChevronLeft size={24} /> Back
+        <ChevronLeft size={30} />
       </button>
 
-      <div className="movie-info-hero">
-        <div className="movie-info-poster">
-          <img 
-            src={movie.poster_url?.replace('/w500', '/original') || "https://via.placeholder.com/400x600?text=No+Poster"} 
-            alt={movie.title} 
-          />
-        </div>
-
+      <div className="movie-info-content">
         <div className="movie-info-details">
           <h1 className="movie-title">{movie.title}</h1>
           
           <div className="movie-meta">
             <span className="match-score">{movie.popularity_score ? Math.round(movie.popularity_score * 10) : 85}% Match</span>
-            <span className="region">{movie.region || 'Global'}</span>
-            <span className="language">{movie.language?.toUpperCase() || 'EN'}</span>
-            {movie.genre && <span className="genre-tag">{movie.genre}</span>}
+            <span className="age-rating">U/A 13+</span>
+            <span className="duration">2h 15m</span>
+            <span className="quality-badge">HD</span>
           </div>
 
           <p className="movie-description">
             {movie.description || "No description available for this title."}
           </p>
+          
+          <div className="movie-cast">
+            <span className="cast-label">Starring:</span> <span>Placeholder Actor 1, Placeholder Actor 2...</span><br/>
+            {movie.genre && <><span className="cast-label">Genres:</span> <span>{movie.genre.split(',').join(', ')}</span></>}
+          </div>
 
           <div className="movie-actions-large">
             <button 
@@ -155,26 +197,33 @@ export default function MovieInfoPage() {
               disabled={actionLoading} 
               onClick={() => handleInteraction('watch')}
             >
-              <Play size={20} fill="currentColor" /> Watch Now
+              <Play size={24} fill="currentColor" /> Play
             </button>
             <button 
-              className={`btn-secondary ${liked ? 'liked' : ''}`} 
-              disabled={actionLoading || liked} 
+              className={`icon-action-btn ${liked ? 'active' : ''}`} 
+              disabled={actionLoading} 
               onClick={() => handleInteraction('like')}
             >
-              <ThumbsUp size={20} fill={liked ? "currentColor" : "none"} /> {liked ? 'Liked' : 'Like'}
+              <ThumbsUp size={24} fill={liked ? "currentColor" : "none"} />
             </button>
             <button 
-              className="btn-secondary" 
+              className={`icon-action-btn ${disliked ? 'active' : ''}`} 
+              disabled={actionLoading} 
+              onClick={() => handleInteraction('dislike')}
+            >
+              <ThumbsDown size={24} fill={disliked ? "currentColor" : "none"} />
+            </button>
+            <button 
+              className="icon-action-btn" 
               disabled={actionLoading} 
               onClick={() => handleInteraction('save')}
             >
-              {saved ? <Check size={20} /> : <Plus size={20} />} {saved ? 'Remove from List' : 'Add to List'}
+              {saved ? <Check size={24} /> : <Plus size={24} />}
             </button>
           </div>
 
           <div className="rating-container">
-            <p style={{ margin: '10px 0 5px', fontSize: '0.9rem', color: '#aaa' }}>Rate this title</p>
+            <p className="cast-label">Rate this title:</p>
             <div className="rating-stars">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star 

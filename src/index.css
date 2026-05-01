@@ -1,6 +1,6 @@
 :root {
-  --bg-primary: #0b0b0b;
-  --bg-secondary: #141414;
+  --bg-primary: #141414;
+  --bg-secondary: #000000;
   --text-primary: #ffffff;
   --text-secondary: #b3b3b3;
   --accent-red: #e50914;
@@ -13,6 +13,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  outline: none;
 }
 
 html,

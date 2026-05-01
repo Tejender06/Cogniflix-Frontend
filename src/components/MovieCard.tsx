@@ -14,10 +14,13 @@ NEXT FLOW:
 MovieInfoPage.tsx
 
 */
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Play, Plus, ChevronDown } from "lucide-react";
 import "./moviecard.css";
 import { type Movie } from "../services/movieService";
-import { useMovieContext } from "../context/MovieContext";
+
 
 interface Props {
   movie: Movie;
@@ -26,32 +29,73 @@ interface Props {
 
 export default function MovieCard({ movie }: Props) {
   const navigate = useNavigate();
-  const location = useLocation();
-  const movieContext = useMovieContext();
+  const [isHovered, setIsHovered] = useState(false);
 
-  const handleClick = () => {
-    if (location.pathname === '/dashboard' || location.pathname === '/') {
-      movieContext.setHeroMovie(movie);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      navigate(`/movie/${movie.id}`);
-    }
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/movie/${movie.id}`, { state: { movie } });
   };
 
   return (
-    <div 
-      className="movie-card" 
-      id={`movie-${movie.id}`}
-      onClick={handleClick}
+    <motion.div 
+      className="movie-card-container"
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      initial={{ scale: 1 }}
+      whileHover={{ scale: 1.15, zIndex: 50 }}
+      transition={{ duration: 0.3, delay: 0.1 }}
     >
-      <img 
-        src={movie.poster_url || "https://via.placeholder.com/300x450?text=No+Poster"} 
-        alt={movie.title} 
-        loading="lazy"
-      />
-      <div className="movie-info">
-        <h3>{movie.title}</h3>
+      <div 
+        className="movie-card" 
+        onClick={handleClick}
+      >
+        <img 
+          src={movie.poster_url || movie.backdrop_url || "https://via.placeholder.com/300x450?text=No+Poster"} 
+          alt={movie.title} 
+          loading="lazy"
+          className="movie-card-image"
+        />
+        
+        <AnimatePresence>
+          {isHovered && (
+            <motion.div 
+              className="movie-hover-details"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="hover-actions">
+                <div className="hover-actions-left">
+                  <button className="icon-btn play-btn" onClick={(e) => { e.stopPropagation(); navigate(`/movie/${movie.id}`, { state: { movie } }); }}>
+                    <Play size={14} fill="currentColor" />
+                  </button>
+                  <button className="icon-btn add-btn" onClick={(e) => e.stopPropagation()}>
+                    <Plus size={16} />
+                  </button>
+                </div>
+                <button className="icon-btn more-btn" onClick={handleClick}>
+                  <ChevronDown size={16} />
+                </button>
+              </div>
+
+              <div className="hover-metadata">
+                {movie.match_percentage && (
+                  <span className="match-text">{movie.match_percentage}% Match</span>
+                )}
+                <span className="age-rating">U/A 13+</span>
+                <span>2h 15m</span>
+              </div>
+
+              <div className="hover-genres">
+                {movie.genre && movie.genre.split(',').slice(0, 3).map((g, i) => (
+                  <span key={i} className="genre-tag">{g.trim()}</span>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 }

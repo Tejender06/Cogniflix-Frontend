@@ -1,8 +1,8 @@
 /*
-FILE: MoviesPage.tsx
+FILE: WebSeriesPage.tsx
 
 PURPOSE:
-Displays the main movie browsing catalog.
+Displays the main Web Series browsing catalog.
 
 FLOW:
 Component -> API Call -> Backend -> Response -> UI Render
@@ -15,14 +15,14 @@ movieService.ts, MovieGrid/Row components
 
 */
 import { useEffect, useState } from "react";
-import { fetchMovies } from "../services/movieService";
+import { fetchWebSeries } from "../services/movieService";
 import type { Movie } from "../services/movieService";
 import MovieCard from "../components/MovieCard";
-import "./dashboard.css"; // Reuse dashboard layout classes
+import "./dashboard.css";
 
 import SkeletonLoader from "../components/SkeletonLoader";
 
-export default function MoviesPage() {
+export default function WebSeriesPage() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -33,9 +33,10 @@ export default function MoviesPage() {
     const loadData = async () => {
       try {
         setLoading(true);
-        const res = await fetchMovies(undefined, undefined, 1, 100);
+        const res = await fetchWebSeries(1, 100);
         setMovies(res.data || []);
-        setHasMore(res.page < res.totalPages);
+        // fetchWebSeries response is just { data: Movie[], totalPages: number }
+        setHasMore(1 < res.totalPages);
       } catch (err) {
         console.error(err);
       } finally {
@@ -50,15 +51,15 @@ export default function MoviesPage() {
     try {
       setLoadingMore(true);
       const nextPage = page + 1;
-      const res = await fetchMovies(undefined, undefined, nextPage, 100);
+      const res = await fetchWebSeries(nextPage, 100);
       setMovies(prev => {
-        // Filter out duplicates just in case
+        // Filter out duplicates
         const existingIds = new Set(prev.map(m => m.id));
         const newMovies = res.data.filter(m => !existingIds.has(m.id));
         return [...prev, ...newMovies];
       });
       setPage(nextPage);
-      setHasMore(res.page < res.totalPages);
+      setHasMore(nextPage < res.totalPages);
     } catch (err) {
       console.error(err);
     } finally {
@@ -82,7 +83,7 @@ export default function MoviesPage() {
   return (
     <div className="dashboard-container">
       <div className="dashboard-content" style={{ marginTop: '100px' }}>
-        <h1 style={{ color: 'white', marginBottom: '20px', padding: '0 4%' }}>All Movies</h1>
+        <h1 style={{ color: 'white', marginBottom: '20px', padding: '0 4%' }}>Web Series</h1>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px', padding: '0 4%' }}>
           {movies.map(movie => (
             <MovieCard key={movie.id} movie={movie} />

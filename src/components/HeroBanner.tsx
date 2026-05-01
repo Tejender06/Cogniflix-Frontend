@@ -44,7 +44,7 @@ export default function HeroBanner({ movie }: { movie: Movie }) {
     // Determine high quality background URL
     let url = movie.backdrop_url;
     if (!url && movie.poster_url) {
-       url = movie.poster_url.replace('/w500', '/original');
+       url = movie.poster_url;
     }
     if (!url) {
        url = "https://via.placeholder.com/1200x800?text=No+Background";
@@ -138,9 +138,27 @@ export default function HeroBanner({ movie }: { movie: Movie }) {
         style={{ zIndex: 10, position: 'relative', pointerEvents: 'auto' }}
       >
         <h1 className="hero-title" style={{ color: '#ffffff', opacity: 1 }}>{movie.title}</h1>
+        
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' }}>
+          {movie.match_percentage && (
+            <span style={{ color: '#46d369', fontWeight: 'bold' }}>{movie.match_percentage}% Match</span>
+          )}
+          {movie.emotion_name && (
+            <span style={{ border: '1px solid rgba(255,255,255,0.4)', padding: '2px 8px', borderRadius: '4px', fontSize: '12px' }}>
+              {movie.emotion_name}
+            </span>
+          )}
+          {movie.language && (
+            <span style={{ color: '#aaa', fontSize: '14px' }}>{movie.language}</span>
+          )}
+          {movie.region && (
+            <span style={{ color: '#aaa', fontSize: '14px' }}>• {movie.region}</span>
+          )}
+        </div>
+
         <p className="hero-description" style={{ color: '#d1d1d1', opacity: 1 }}>{movie.description || "Top recommended movie based on your interests."}</p>
         <div className="buttons">
-          <button className="play" onClick={() => navigate(`/movie/${movie.id}`)} style={{ zIndex: 20 }}>
+          <button className="play" onClick={() => navigate(`/movie/${movie.id}`, { state: { movie } })} style={{ zIndex: 20 }}>
             <Play size={20} fill="currentColor" /> Play
           </button>
           <button className="list" onClick={handleAddToList} disabled={loading} style={{ zIndex: 20 }}>

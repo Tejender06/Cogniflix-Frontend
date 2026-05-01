@@ -243,25 +243,7 @@ body {
   border-radius: 4px;
 }
 
-/* ================= MOVIE CARD ================= */
-.movie-card {
-  min-width: 180px;
-  height: 270px;
-  border-radius: 12px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.movie-card:hover {
-  transform: scale(1.05);
-}
-
-.movie-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+/* Removed conflicting movie-card styles */
 
 /* ================= BOTTOM NAV ================= */
 .bottom-nav {
