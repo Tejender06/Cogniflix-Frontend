@@ -3,26 +3,13 @@ FILE: api.ts
 
 PURPOSE:
 Handles base Axios configuration and interceptors for backend API calls.
-
-FLOW:
-Frontend -> API Service -> Backend
-
-USED BY:
-All service files
-
-NEXT FLOW:
-Backend routes
-
 */
 import axios from 'axios';
 
-const API_BASE_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "https://cogniflix-backend.onrender.com";
-
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: import.meta.env.VITE_API_URL || (window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://cogniflix-backend.onrender.com"),
   withCredentials: true,
 });
 
@@ -41,9 +28,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      if (window.location.pathname !== '/login' && window.location.pathname !== '/signup') {
-        window.location.href = '/login';
-      }
+      localStorage.removeItem("token");
     }
     return Promise.reject(error);
   }

@@ -3,37 +3,48 @@ FILE: LoginPage.tsx
 
 PURPOSE:
 Handles user authentication input and form submission.
-
-FLOW:
-Component -> Form Submit -> authService -> Backend -> AuthContext Update
-
-USED BY:
-AppRoutes.tsx
-
-NEXT FLOW:
-authService.ts
-
 */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Mail, Lock, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
+import api from "../services/api";
 import "./login.css";
 
 export default function LoginPage() {
   const [show, setShow] = useState(false);
-
   const [email, setEmail] = useState("test@mail.com");
   const [password, setPassword] = useState("Test@123");
-
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isSlow, setIsSlow] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(true);
 
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  useEffect(() => {
+    const verifyToken = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setIsVerifying(false);
+        return;
+      }
+
+      try {
+        const res = await api.get("/api/auth/me");
+        login(res.data.user);
+        navigate("/dashboard", { replace: true });
+      } catch (error) {
+        localStorage.removeItem("token");
+        setIsVerifying(false);
+      }
+    };
+
+    verifyToken();
+  }, [navigate, login]);
 
   const handleLogin = async () => {
     setError("");
@@ -46,8 +57,11 @@ export default function LoginPage() {
 
     try {
       const data = await loginUser(email, password);
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
       login(data.user); // Update global auth state
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -60,6 +74,14 @@ export default function LoginPage() {
       setIsSlow(false);
     }
   };
+
+  if (isVerifying) {
+    return (
+      <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: 'var(--bg-primary)' }}>
+        <p style={{ color: 'white' }}>Verifying session...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container">

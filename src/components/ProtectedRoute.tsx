@@ -3,25 +3,40 @@ FILE: ProtectedRoute.tsx
 
 PURPOSE:
 Guards routes requiring authentication, redirecting if necessary.
-
-FLOW:
-Router -> ProtectedRoute -> Check Auth -> Render Child/Redirect
-
-USED BY:
-AppRoutes.tsx
-
-NEXT FLOW:
-DashboardPage.tsx or LoginPage.tsx
-
 */
+import { useState, useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import SkeletonLoader from "./SkeletonLoader";
+import api from "../services/api";
 
 export default function ProtectedRoute() {
-  const { user, loading } = useAuth();
+  const [isValidating, setIsValidating] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  if (loading) {
+  useEffect(() => {
+    const validateToken = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setIsValidating(false);
+        setIsAuthenticated(false);
+        return;
+      }
+
+      try {
+        await api.get("/api/auth/me");
+        setIsAuthenticated(true);
+      } catch (error) {
+        localStorage.removeItem("token");
+        setIsAuthenticated(false);
+      } finally {
+        setIsValidating(false);
+      }
+    };
+
+    validateToken();
+  }, []);
+
+  if (isValidating) {
     return (
       <div style={{ paddingTop: '70px', minHeight: '100vh', backgroundColor: 'var(--bg-primary)' }}>
         <SkeletonLoader type="banner" />
@@ -35,7 +50,7 @@ export default function ProtectedRoute() {
     );
   }
 
-  if (!user) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
