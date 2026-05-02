@@ -50,49 +50,16 @@
 
 .mrow__track {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-behavior: smooth;
-  padding: 40px 0 100px 0; /* Add large padding to prevent clipping of hover cards */
+  padding: 40px 0 100px 0;
   scroll-snap-type: x mandatory;
+  will-change: scroll-position;
 }
 
 .mrow__track::-webkit-scrollbar {
   display: none;
 }
-
-.sliderArrow {
-  width: 50px;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  position: absolute;
-  z-index: 99;
-  top: 0;
-  bottom: 0;
-  margin: auto;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.3s, background-color 0.3s;
-}
-
-.mrow__track-wrap:hover .sliderArrow {
-  opacity: 1;
-}
-
-.sliderArrow:hover {
-  background-color: rgba(0, 0, 0, 0.7);
-}
-
-.sliderArrow.left {
-  left: 0;
-}
-
-.sliderArrow.right {
-  right: 0;
-}
-
-.sliderArrow.hidden {
-  display: none;
-}
+

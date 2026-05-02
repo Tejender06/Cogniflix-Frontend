@@ -14,9 +14,8 @@ NEXT FLOW:
 MovieCard.tsx
 
 */
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import MovieCard from "./MovieCard";
 import "./movierow.css";
 
@@ -31,16 +30,6 @@ interface MovieRowProps {
 export default function MovieRow({ title, movies, exploreUrl }: MovieRowProps) {
   const rowRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
-  const [isMoved, setIsMoved] = useState(false);
-
-  const handleClick = (direction: "left" | "right") => {
-    setIsMoved(true);
-    if (rowRef.current) {
-      const { scrollLeft, clientWidth } = rowRef.current;
-      const scrollTo = direction === "left" ? scrollLeft - clientWidth : scrollLeft + clientWidth;
-      rowRef.current.scrollTo({ left: scrollTo, behavior: "smooth" });
-    }
-  };
 
   return (
     <section className="mrow">
@@ -58,24 +47,12 @@ export default function MovieRow({ title, movies, exploreUrl }: MovieRowProps) {
       </div>
 
       <div className="mrow__track-wrap group">
-        <ChevronLeft 
-          className={`sliderArrow left ${!isMoved && "hidden"}`} 
-          onClick={() => handleClick("left")} 
-          size={40}
-        />
-        
         <div className="mrow__track" ref={rowRef}>
           {Array.isArray(movies) &&
             movies.map((movie) => (
               <MovieCard key={movie.id} movie={movie} />
             ))}
         </div>
-        
-        <ChevronRight 
-          className="sliderArrow right" 
-          onClick={() => handleClick("right")} 
-          size={40}
-        />
       </div>
     </section>
   );

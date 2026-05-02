@@ -54,6 +54,9 @@ export default function MovieCard({ movie }: Props) {
           alt={movie.title} 
           loading="lazy"
           className="movie-card-image"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&q=80';
+          }}
         />
         
         <AnimatePresence>
